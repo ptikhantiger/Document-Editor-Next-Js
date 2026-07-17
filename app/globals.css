@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafc;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -12,15 +12,65 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  color-scheme: light;
+}
+
+.tiptap-content {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: #1e293b;
+}
+
+.tiptap-content > * + * {
+  margin-top: 0.9em;
+}
+
+.tiptap-content h1 {
+  font-size: 1.75em;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #0f172a;
+}
+
+.tiptap-content h2 {
+  font-size: 1.375em;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #0f172a;
+}
+
+.tiptap-content h3 {
+  font-size: 1.125em;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #0f172a;
+}
+
+.tiptap-content ul,
+.tiptap-content ol {
+  padding-left: 1.5em;
+}
+
+.tiptap-content ul {
+  list-style: disc;
+}
+
+.tiptap-content ol {
+  list-style: decimal;
+}
+
+.tiptap-content li + li {
+  margin-top: 0.3em;
+}
+
+.tiptap-content p.is-editor-empty:first-child::before {
+  content: "Start writing…";
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: #94a3b8;
 }
