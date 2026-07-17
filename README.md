@@ -56,6 +56,22 @@ npm run build
 npm run start
 ```
 
+## Deploying to Vercel
+
+Vercel's serverless functions run on an ephemeral, largely read-only filesystem, so a local `file:./dev.db` won't persist between requests in production. This project uses Prisma's LibSQL driver adapter (`@prisma/adapter-libsql`), which works against **both** a local SQLite file (for `npm run dev`) and a hosted [Turso](https://turso.tech) database (for production) — same schema, same code, just a different `DATABASE_URL`.
+
+1. **Create a free Turso database** — via the [Turso dashboard](https://turso.tech) or the CLI (`turso db create document-editor`).
+2. **Get its connection details** — a `libsql://...` URL and an auth token (`turso db show <name> --url` / `turso db tokens create <name>`).
+3. **Set environment variables on your Vercel project** (Project Settings → Environment Variables):
+   - `DATABASE_URL` = `libsql://<db-name>-<org>.turso.io`
+   - `DATABASE_AUTH_TOKEN` = the token from step 2
+4. **Push the schema and seed data to Turso** (one-time, from your machine, with those same env vars set locally):
+   ```bash
+   DATABASE_URL="libsql://..." DATABASE_AUTH_TOKEN="..." npx prisma db push
+   DATABASE_URL="libsql://..." DATABASE_AUTH_TOKEN="..." npm run seed
+   ```
+5. **Redeploy.** The `postinstall` script (`prisma generate`) runs automatically on every `npm install`, so the generated client is always present at build time.
+
 ## How it works
 
 ### Tech stack
@@ -63,7 +79,7 @@ npm run start
 | Layer | Choice | Why |
 |---|---|---|
 | Framework | Next.js 16 (App Router) | Server Components fetch data directly with no separate API layer; Server Actions handle all mutations. |
-| Database | SQLite via `@prisma/adapter-better-sqlite3` | Zero external infra — clone, `db push`, `seed`, done. |
+| Database | SQLite via `@prisma/adapter-libsql` | Zero external infra locally (`file:./dev.db`) — the same LibSQL adapter also talks to a hosted [Turso](https://turso.tech) database in production, since a local file can't persist on serverless. |
 | ORM | Prisma 7 | Type-safe schema/client, migrations, and query builder. |
 | Editor | Tiptap 3 (`@tiptap/react` + `starter-kit`) | Headless — full control over styling via Tailwind; serializes to JSON for storage. |
 | Styling | Tailwind CSS v4 | Utility-first, light-mode only, responsive by default. |
@@ -128,7 +144,7 @@ components/
   NewDocumentMenu.tsx     "New document" / "Import .txt/.md"
 lib/
   auth.ts               Session helpers (getCurrentUser, requireUser)
-  prisma.ts              Prisma client singleton (SQLite driver adapter)
+  prisma.ts              Prisma client singleton (LibSQL driver adapter — local file or Turso)
   content.ts              Plain text ↔ Tiptap JSON conversion
   format.ts               Relative time formatting
 prisma/
