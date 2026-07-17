@@ -58,7 +58,11 @@ npm run start
 
 ## Deploying to Vercel
 
-Vercel's serverless functions run on an ephemeral, largely read-only filesystem, so a local `file:./dev.db` won't persist between requests in production. This project uses Prisma's LibSQL driver adapter (`@prisma/adapter-libsql`), which works against **both** a local SQLite file (for `npm run dev`) and a hosted [Turso](https://turso.tech) database (for production) — same schema, same code, just a different `DATABASE_URL`.
+Vercel's serverless functions run on an ephemeral, largely read-only filesystem, so a local `file:./dev.db` won't persist between requests in production. This project uses Prisma's LibSQL driver adapter (`@prisma/adapter-libsql`), which works against a local SQLite file (for `npm run dev`), a hosted [Turso](https://turso.tech) database, **or** — with zero setup — a self-seeding scratch database in `/tmp`.
+
+**Option A — zero setup (default).** Just deploy. If `DATABASE_URL` isn't set and the app detects it's running on Vercel, it creates the schema and seeds the two demo accounts into `/tmp/dev.db` on cold start (`lib/prisma.ts`). No external service required. The tradeoff: `/tmp` doesn't persist across cold starts or between concurrent instances, so created/edited documents can disappear unpredictably — fine for a UI demo, not for real use.
+
+**Option B — persistent data via Turso (recommended for actual use).**
 
 1. **Create a free Turso database** — via the [Turso dashboard](https://turso.tech) or the CLI (`turso db create document-editor`).
 2. **Get its connection details** — a `libsql://...` URL and an auth token (`turso db show <name> --url` / `turso db tokens create <name>`).
